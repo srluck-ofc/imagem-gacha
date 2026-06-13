@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FTF Epics Tier List</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #000000; color: #ffffff; font-family: Arial, sans-serif; }
+    .tier-list { display: flex; flex-direction: column; width: fit-content; }
+    .tier-row { display: flex; align-items: flex-start; background-color: #000000; height: 90px; }
+    .tier-label { width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; color: #000000; flex-shrink: 0; text-align: center; }
+    .tier-items { display: flex; flex-wrap: nowrap; gap: 5px; padding: 0 5px; height: 90px; align-items: center; }
+    .item-card { width: 75px; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .image-box { width: 65px; height: 65px; position: relative; display: flex; align-items: center; justify-content: center; background-color: transparent; flex-shrink: 0; }
+    .item-image { max-width: 65px; max-height: 65px; object-fit: contain; }
+    .event-icon { position: absolute; top: 0; left: 0; width: 18px; height: 18px; object-fit: contain; }
+    .item-value { position: absolute; bottom: 0; right: 0; font-size: 15px; font-weight: bold; color: #ffffff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+    .item-name { font-size: 10px; font-weight: bold; text-align: center; width: 100%; margin-top: 2px; line-height: 1.2; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</head>
+<body>
+  <div id="tier-list" class="tier-list"></div>
+  <script>
+    const eventsMap = { lunar: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/LunarNewYear.png', valentines: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Valentines.png', clover: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/SaintPatrick.png', spring: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Spring.png', easter: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Easter.png', ftf_event: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Anniversary.png', summer: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Summer.png', autumn: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Fall.png', halloween: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Halloween.png', christmas: 'https://raw.githubusercontent.com/HuntSlayer/FTF-Values/refs/heads/main/images/Winter.png' };
+    function getTierColor(index, total) {
+      if (total <= 1) return '#9400d3';
+      const start = { r: 148, g: 0, b: 211 }; // Roxo
+      const end = { r: 255, g: 255, b: 255 }; // Branco
+      const r = index / (total - 1);
+      const red = Math.round(start.r + (end.r - start.r) * r);
+      const green = Math.round(start.g + (end.g - start.g) * r);
+      const blue = Math.round(start.b + (end.b - start.b) * r);
+      return `rgb(${red}, ${green}, ${blue})`;
+    }
+    async function init() {
+      try {
+        const response = await fetch('https://ftf-values.base44.app/api/apps/69729a04f6715b73ccf4245d/entities/Item?q=%7B%22rarity%22:%22epic%22%7D');
+        let data = await response.json();
+        data.sort((a, b) => (b.value - a.value) || (b.demand - a.demand));
+        const chunks = []; const chunkSize = 9;
+        for (let i = 0; i < data.length; i += chunkSize) { chunks.push(data.slice(i, i + chunkSize)); }
+        const container = document.getElementById('tier-list');
+        chunks.forEach((chunk, index) => {
+          const row = document.createElement('div'); row.className = 'tier-row';
+          const label = document.createElement('div'); label.className = 'tier-label';
+          label.style.backgroundColor = getTierColor(index, chunks.length); label.textContent = 'Tier ' + (index + 1);
+          const itemsBox = document.createElement('div'); itemsBox.className = 'tier-items';
+          chunk.forEach(item => {
+            const card = document.createElement('div'); card.className = 'item-card';
+            card.innerHTML = `<div class="image-box"><img class="item-image" src="${item.image_url}"><div class="item-value">[${item.value}]</div>${item.event ? `<img class="event-icon" src="${eventsMap[item.event]}">`:''}</div><div class="item-name">${item.name}</div>`;
+            itemsBox.appendChild(card);
+          });
+          row.appendChild(label); row.appendChild(itemsBox); container.appendChild(row);
+        });
+      } catch (e) { console.error(e); }
+    }
+    init();
+  </script>
+</body>
+</html>
